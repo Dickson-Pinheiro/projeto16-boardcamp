@@ -1,15 +1,30 @@
-const games = []
+import { db } from "../database/database"
+
 
 export const gamesController = {
-    createGame(req, res){
+    async createGame(req, res) {
         const { name, image, stockTotal, pricePerDay } = req.body
 
-        const game = {}
-        Object.assign(game, {name, image, stockTotal, pricePerDay})
-
-        return res.status(201).send()
+        try {
+            const query = "insert into games (name, image, stockTotal, pricePerDay) values ($1, $2, $3, $4);"
+            await db.query(query, [name, image, stockTotal, pricePerDay])
+            return res.status(201).send()
+        } catch (error) {
+            console.log(error)
+            return res.status(500).send()
+        }
     },
-    getGames(req, res){
-        return res.send(games)
+
+    async getGames(req, res) {
+        try {
+            const query = "select * from games;"
+            const games = await db.query(query)
+            return res.send(games.rows)
+        } catch (error) {
+            console.log(error)
+            return res.status(500).send()
+        }
+
+
     }
 }

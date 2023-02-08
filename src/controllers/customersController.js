@@ -1,42 +1,69 @@
-const customers = []
+import { db } from "../database/database"
 
 export const customersController = {
-    createCustomer(req, res){
+    async createCustomer(req, res){
         const {name, phone, cpf, birthday} = req.body
         const customer = {}
         Object.assign(customer, {name, phone, cpf, birthday})
         customers.push(consumer)
-        /* insert into customers (name, phine, cpf, birthday) values (?, ?, ?, ?); */
-        return res.status(201).send({message: "created"})
+        
+        try {
+            const query = "insert into customers (name, phone, cpf, birthday) values ($1, $2, $3, $4);" 
+            await db.query(query, [name, phone, cpf, birthday])
+            return res.status(201).send({message: "created"})
+        } catch (error) {
+            console.log(error)
+            return res.status(500).send()
+        }
     },
 
-    updateCustomer(req, res){
+    async updateCustomer(req, res){
         const {name, phone, cpf, birthday} = req.body
         const {id} = req.params
 
-        const customer = customers.find(cust => cust.id === id)
+        try {
+            const query = "select * from customers where id=$1;"
+            const customer = await db.query(query, [id])
 
-        if(!customer){
-            return res.status(404).send({message: "user not found"})
-        }
-        /*update consumers set name=?, phone=?, cpf=?, birthday=? where id=?; */        
-        Object.assign(customer, {name, phone, cpf, birthday})
-        res.status(200).send()
+            if(!customer.rows[0]){
+                return res.status(404).send({message: "user not found"})
+            }
+
+            const queryUpdate = "update consumers set name=$1, phone=$2, cpf=$3, birthday=$4 where id=$5;"
+            await db.query(queryUpdate, [name, phone, cpf, birthday, id])
+            return res.status(200).send()
+        } catch (error) {
+            console.log(error)
+            return res.status(500).send()
+        }      
     },
 
-    getCustomerById(req, res){
+    async getCustomerById(req, res){
         const {id} = req.params
-        /*select * from consumers where id=?; */
-        const customer = customers.find(customer => customer.id === id)
-        if(!customer){
-            res.status(404).send({message: "user not found"})
+
+        try {
+            const query = "select * from consumers where id=$1;"
+        const customer = await db.query(query, [id])
+        if(!customer.rows[0]){
+           return res.status(404).send({message: "user not found"})
         }
-        res.send(customer)
+        return res.send(customer)
+        } catch (error) {
+            console.log(error)
+            return res.status(500).send()
+        }
     },
 
-    getCustomers(req, res){
-        /*select * from customers*/
-        res.send(customers)
+    async getCustomers(req, res){
+        try {
+            const query = "select * from customers;"
+            const customers = await db.query(query)
+            return res.send(customers.rows)
+        } catch (error) {
+            console.log(error)
+            return res.status(500).send()
+        }
+        
     }
 
 }
