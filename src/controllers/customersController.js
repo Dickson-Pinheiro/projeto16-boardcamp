@@ -80,7 +80,8 @@ export const customersController = {
         try {
             const query = "select * from customers order by id;"
             const customers = await db.query(query)
-            return res.send(customers.rows)
+            const customerData = customers.rows.map(c => {return {...c, birthday: dayjs(c.birthday).format("YYYY-MM-DD")}} )
+            return res.send(customerData)
         } catch (error) {
             console.log(error)
             return res.status(500).send()
