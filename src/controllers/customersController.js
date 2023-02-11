@@ -8,6 +8,14 @@ export const customersController = {
         const dateBirthday = dayjs(new Date(birthday)).format("YYYY-MM-DD");
     
         try {
+            const queryVerifyCpf = 'select * from customers where cpf=$1;'
+
+            const customer = await db.query(queryVerifyCpf, [cpf])
+
+            if(customer.rows[0]){
+                return res.status(409).send()
+            }
+
             const query = "insert into customers (name, phone, cpf, birthday) values ($1, $2, $3, $4);" 
             await db.query(query, [name, phone, cpf, dateBirthday])
             return res.status(201).send()
@@ -24,11 +32,23 @@ export const customersController = {
         const dateBirthday = dayjs(new Date(birthday)).format("YYYY-MM-DD");
 
         try {
+
+
+
             const query = "select * from customers where id=$1;"
             const customer = await db.query(query, [id])
 
             if(!customer.rows[0]){
                 return res.status(404).send({message: "user not found"})
+            }
+
+            if(!(cpf === customer.rows[0].cpf)){
+
+                const queryVerifyCpf = 'select * from customers where cpf=$1;'
+                const customerCpf = await db.query(queryVerifyCpf, [cpf])
+                if(customerCpf.rows[0]){
+                    return res.status(409).send()
+                }
             }
 
             const queryUpdate = "update customers set name=$1, phone=$2, cpf=$3, birthday=$4 where id=$5;"
@@ -58,7 +78,7 @@ export const customersController = {
 
     async getCustomers(req, res){
         try {
-            const query = "select * from customers;"
+            const query = "select * from customers order by id;"
             const customers = await db.query(query)
             return res.send(customers.rows)
         } catch (error) {
