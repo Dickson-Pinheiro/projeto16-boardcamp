@@ -1,16 +1,16 @@
-import { db } from "../database/database"
+import { db } from "../database/database.js"
+import dayjs from "dayjs"
 
 export const customersController = {
     async createCustomer(req, res){
         const {name, phone, cpf, birthday} = req.body
-        const customer = {}
-        Object.assign(customer, {name, phone, cpf, birthday})
-        customers.push(consumer)
         
+        const dateBirthday = dayjs(new Date(birthday)).format("YYYY-MM-DD");
+    
         try {
             const query = "insert into customers (name, phone, cpf, birthday) values ($1, $2, $3, $4);" 
-            await db.query(query, [name, phone, cpf, birthday])
-            return res.status(201).send({message: "created"})
+            await db.query(query, [name, phone, cpf, dateBirthday])
+            return res.status(201).send()
         } catch (error) {
             console.log(error)
             return res.status(500).send()
@@ -21,6 +21,8 @@ export const customersController = {
         const {name, phone, cpf, birthday} = req.body
         const {id} = req.params
 
+        const dateBirthday = dayjs(new Date(birthday)).format("YYYY-MM-DD");
+
         try {
             const query = "select * from customers where id=$1;"
             const customer = await db.query(query, [id])
@@ -29,8 +31,8 @@ export const customersController = {
                 return res.status(404).send({message: "user not found"})
             }
 
-            const queryUpdate = "update consumers set name=$1, phone=$2, cpf=$3, birthday=$4 where id=$5;"
-            await db.query(queryUpdate, [name, phone, cpf, birthday, id])
+            const queryUpdate = "update customers set name=$1, phone=$2, cpf=$3, birthday=$4 where id=$5;"
+            await db.query(queryUpdate, [name, phone, cpf, dateBirthday, id])
             return res.status(200).send()
         } catch (error) {
             console.log(error)
@@ -42,12 +44,12 @@ export const customersController = {
         const {id} = req.params
 
         try {
-            const query = "select * from consumers where id=$1;"
+            const query = "select * from customers where id=$1;"
         const customer = await db.query(query, [id])
         if(!customer.rows[0]){
            return res.status(404).send({message: "user not found"})
         }
-        return res.send(customer)
+        return res.send(customer.rows)
         } catch (error) {
             console.log(error)
             return res.status(500).send()

@@ -1,4 +1,4 @@
-import { db } from "../database/database"
+import { db } from "../database/database.js"
 
 
 export const gamesController = {
@@ -6,7 +6,7 @@ export const gamesController = {
         const { name, image, stockTotal, pricePerDay } = req.body
 
         try {
-            const query = "insert into games (name, image, stockTotal, pricePerDay) values ($1, $2, $3, $4);"
+            const query = 'insert into games (name, image, "stockTotal", "pricePerDay") values ($1, $2, $3, $4);'
             await db.query(query, [name, image, stockTotal, pricePerDay])
             return res.status(201).send()
         } catch (error) {
@@ -24,7 +24,5 @@ export const gamesController = {
             console.log(error)
             return res.status(500).send()
         }
-
-
     }
 }
