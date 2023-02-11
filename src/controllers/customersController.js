@@ -69,7 +69,7 @@ export const customersController = {
         if(!customer.rows[0]){
            return res.status(404).send({message: "user not found"})
         }
-        return res.send(customer.rows)
+        return res.send({...customer.rows[0], birthday: dayjs(customer.rows[0].birthday).format("YYYY-MM-DD")})
         } catch (error) {
             console.log(error)
             return res.status(500).send()
