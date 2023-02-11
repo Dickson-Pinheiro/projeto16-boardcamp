@@ -6,8 +6,15 @@ export const gamesController = {
         const { name, image, stockTotal, pricePerDay } = req.body
 
         try {
-            const query = 'insert into games (name, image, "stockTotal", "pricePerDay") values ($1, $2, $3, $4);'
-            await db.query(query, [name, image, stockTotal, pricePerDay])
+            const queryVerifyName = 'select * from games where name = $1;'
+
+            const game = await db.query(queryVerifyName, [name])
+            if(game.rows[0]){
+                return res.status(409).send()
+            }
+
+            const queryInsertGame = 'insert into games (name, image, "stockTotal", "pricePerDay") values ($1, $2, $3, $4);'
+            await db.query(queryInsertGame, [name, image, stockTotal, pricePerDay])
             return res.status(201).send()
         } catch (error) {
             console.log(error)
